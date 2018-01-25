@@ -25,11 +25,17 @@ class ShaderProgram {
   attrNor: number;
   attrCol: number;
 
+
   unifModel: WebGLUniformLocation;
   unifModelInvTr: WebGLUniformLocation;
   unifViewProj: WebGLUniformLocation;
   unifColor: WebGLUniformLocation;
   unifTime: WebGLUniformLocation;
+  unifEye: WebGLUniformLocation;
+  ocean: WebGLUniformLocation;              // bool representing GUI control of whether ocean is water (1) or lava (0)
+  rotSpeed: WebGLUniformLocation;          // float representing GUI control of planet rotation speed
+  mountainHeight: WebGLUniformLocation;     // float representing GUI control of mountain height
+  globalWarming: WebGLUniformLocation; 
 
   constructor(shaders: Array<Shader>) {
     this.prog = gl.createProgram();
@@ -50,6 +56,11 @@ class ShaderProgram {
     this.unifViewProj   = gl.getUniformLocation(this.prog, "u_ViewProj");
     this.unifColor      = gl.getUniformLocation(this.prog, "u_Color");
     this.unifTime       = gl.getUniformLocation(this.prog, "u_Time");
+    this.unifEye       = gl.getUniformLocation(this.prog, "u_Eye");
+    this.ocean =    gl.getUniformLocation(this.prog, "u_ocean");
+    this.rotSpeed = gl.getUniformLocation(this.prog, "u_rotSpeed");
+    this.mountainHeight = gl.getUniformLocation(this.prog, "u_mountainHeight");
+    this.globalWarming = gl.getUniformLocation(this.prog, "u_globalWarming");
   }
 
   use() {
@@ -93,6 +104,20 @@ class ShaderProgram {
         gl.uniform1f(this.unifTime, t);
     }
 }
+
+  setEye(e: vec4) {
+    this.use();
+    if(this.unifEye != -1) {
+        gl.uniform4fv(this.unifEye, e);
+    }
+  }
+
+  setOcean(i: number) {
+    this.use();
+    if(this.ocean != -1) {
+        gl.uniform1i(this.ocean, i);
+    }
+  }
 
 
   draw(d: Drawable) {

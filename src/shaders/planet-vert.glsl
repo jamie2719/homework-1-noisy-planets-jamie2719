@@ -19,8 +19,10 @@ uniform mat4 u_ViewProj;    // The matrix that defines the camera's transformati
                             // We've written a static matrix for you to use for HW2,
                             // but in HW3 you'll have to generate one yourself
 out float offset;
+out float waterNoise;
 
 uniform float u_Time;
+uniform vec4 u_Eye;
 
 in vec4 vs_Pos;             // The array of vertex positions passed to the shader
 
@@ -28,10 +30,16 @@ in vec4 vs_Nor;             // The array of vertex normals passed to the shader
 
 in vec4 vs_Col;             // The array of vertex colors passed to the shader.
 
+//uniform float u_rotSpeed;         // float representing GUI control of planet rotation speed
+//uniform float u_mountainHeight;     // float representing GUI control of mountain height
+//uniform int u_globalWarming;     // float representing whether planet is in ice age (-1), neutral (0), or complete global warming (1)
+
+
 out vec4 fs_Nor;            // The array of normals that has been transformed by u_ModelInvTr. This is implicitly passed to the fragment shader.
 out vec4 fs_LightVec;       // The direction in which our virtual light lies, relative to each vertex. This is implicitly passed to the fragment shader.
 out vec4 fs_Col;            // The color of each vertex. This is implicitly passed to the fragment shader.
 out vec4 fs_Pos;
+out vec4 fs_CamPos;         // position of the camera
 
 const vec4 lightPos = vec4(5, 5, 3, 1); //The position of our virtual light, which is used to compute the shading of
                                         //the geometry in the fragment shader.
@@ -55,17 +63,7 @@ float perlin(vec3 p, vec3 gridPoint) {
     return dot(toP, gradient);
 }
 
-
-
-
-void main()
-{
-
-    float summedNoise = 0.0;
-    float amplitude = 0.5;
-    float val;
-    for(int i = 2; i <= 8; i *= 2) {
-    vec3 pos = vec3(vs_Pos) *2.0f * float(i);
+float trilinearInterpolation(vec3 pos) {
     float tx = smoothstep(0.0, 1.0, fract(pos.x));
     float ty = smoothstep(0.0, 1.0, fract(pos.y));
     float tz = smoothstep(0.0, 1.0, fract(pos.z));
@@ -98,22 +96,41 @@ void main()
     float top = tfbl * (1.0f - tx) + tfbr * tx;
     float bottom = bfbl * (1.0f - tx) + bfbr * tx;
 
-    val = top * (ty) + bottom * (1.0f - ty);
+    return top * (ty) + bottom * (1.0f - ty);
+}
 
-        
-    
+
+
+
+void main()
+{
+
+    float summedNoise = 0.0;
+    float water = 0.0;
+    float amplitude = 0.5;
+    float val;
+    for(int i = 2; i <= 8; i *= 2) {
+        vec3 pos = vec3(vs_Pos) *2.0f * float(i);
+        val = trilinearInterpolation(pos);
         summedNoise += val * amplitude;
         amplitude *= 0.5;
     }
 
     val =  summedNoise;
 
+
+    //water noise calculation
+    vec3 waterPos = vec3(vs_Pos) * 16.0f;
+    waterNoise = trilinearInterpolation(waterPos) *1.5f;
+    
+
+
     val *= .6f;
     vec4 offsetPos = vec4(0.0, val, 0.0, 0.0);
-
+    offset = offsetPos.y;
 
     fs_Col = vs_Col;                         // Pass the vertex colors to the fragment shader for interpolation
-    fs_Pos = offsetPos;
+    
 
     
 
@@ -134,7 +151,9 @@ void main()
        // Temporarily store the transformed vertex positions for use below
 
     fs_LightVec = lightPos - modelposition;  // Compute the direction in which the light source lies
+    fs_CamPos = u_Eye;
 
+    fs_Pos = modelposition;
     gl_Position = u_ViewProj * modelposition;// gl_Position is a built-in variable of OpenGL which is
                                              // used to render the final positions of the geometry's vertices
 }

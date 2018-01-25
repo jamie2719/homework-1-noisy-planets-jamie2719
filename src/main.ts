@@ -16,10 +16,14 @@ import { print } from 'util';
 const controls = {
   tesselations: 6,
   'Load Scene': loadScene, // A function pointer, essentially
-  Red: 1,
-  Green: 0,
-  Blue: 1,
-  Shader: 'Planet'
+  Lambert_Red: 1,
+  Lambert_Green: 0,
+  Lambert_Blue: 1,
+  Shader: 'Planet',
+  Ocean: 'Water',
+  Rotation_Speed: .5,
+  Mountain_Height: 1,
+  Global_Warming: 0
 };
 
 let icosphere: Icosphere;
@@ -50,10 +54,14 @@ function main() {
   const gui = new DAT.GUI();
   gui.add(controls, 'tesselations', 0, 8).step(1);
   gui.add(controls, 'Load Scene');
-  gui.add(controls, 'Red', 0, 1).step(.05);
-  gui.add(controls, 'Green', 0, 1).step(.05);
-  gui.add(controls, 'Blue', 0, 1).step(.05);
+  gui.add(controls, 'Lambert_Red', 0, 1).step(.05);
+  gui.add(controls, 'Lambert_Green', 0, 1).step(.05);
+  gui.add(controls, 'Lambert_Blue', 0, 1).step(.05);
   gui.add(controls, 'Shader', ['Lambert', 'Custom', 'Planet']);
+  gui.add(controls, 'Ocean', ['Water', 'Lava']);
+  gui.add(controls, 'Rotation_Speed', 0, 5).step(.2);
+  gui.add(controls, 'Mountain_Height', 0, 5).step(.5);
+  gui.add(controls, 'Global_Warming', -1, 1).step(1);
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -93,13 +101,24 @@ function main() {
   function tick() {
     lambert.setTime(currTime);
     custom.setTime(currTime);
+    planet.setTime(currTime);
     currTime++;
     camera.update();
     stats.begin();
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
-    let color = vec4.fromValues(controls.Red, controls.Green, controls.Blue, 1);  
+
+    //gui updates
+    let color = vec4.fromValues(controls.Lambert_Red, controls.Lambert_Green, controls.Lambert_Blue, 1);  
     lambert.setGeometryColor(color);
-    //custom.setGeometryColor(vec4.fromValues(1,0, 0, 1));
+
+    if(controls.Ocean == "Water") {
+      planet.setOcean(1);
+    }
+    else {
+      planet.setOcean(0);
+    }
+
+
     renderer.clear();
     if(controls.Shader == 'Lambert') {
       renderer.render(camera, lambert, [
