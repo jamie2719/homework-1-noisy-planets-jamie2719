@@ -19,7 +19,7 @@ const controls = {
   Red: 1,
   Green: 0,
   Blue: 1,
-  Shader: 'Lambert'
+  Shader: 'Planet'
 };
 
 let icosphere: Icosphere;

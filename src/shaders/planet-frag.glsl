@@ -22,6 +22,8 @@ in vec4 fs_LightVec;
 in vec4 fs_Col;
 in vec4 fs_Pos;
 
+in float offset;
+
 
 out vec4 out_Col; // This is the final output color that you will see on your
                   // screen for the pixel that is currently being processed.
@@ -92,19 +94,32 @@ void main()
 
 
     val *= .7f;
-    vec4 diffuseColor = vec4((val + 1.0f) * 0.5);
-    diffuseColor.a = 1.0;
+    //vec4 diffuseColor = vec4((val + 1.0f) * 0.5);
+    //diffuseColor.a = 1.0;
+vec4 diffuseColor;
 
 
-if(fs_Pos.y < .06 && fs_Pos.y> -.06) {
-    diffuseColor = vec4(0.0, 0.0, 1.0, 1.0);
+
+if(fs_Pos.y > .15 || fs_Pos.y < -.15) {
+    diffuseColor = vec4(1.0, 1.0, 1.0, 1.0); //mountaintop
 } 
-else if(fs_Pos.y < .2 && fs_Pos.y> -.2) {
-    diffuseColor = vec4(1.0, 0.0, 0.0, 1.0);
+else if(fs_Pos.y > .08 || fs_Pos.y < -.08) {
+    diffuseColor = vec4(90.0f / 255.0f, 67.0f / 255.0f, 0.0f, 1.0f); //mountain
+}
+else if(fs_Pos.y > .03 || fs_Pos.y < -.03) {
+    diffuseColor = vec4(0.0f, 150.0f / 255.0f, 0.0f, 1.0); //grass
+}
+else if(fs_Pos.y > .02 || fs_Pos.y < -.02) {
+    diffuseColor = vec4(248.0f / 255.0f, 205.0 / 255.0f, 80.0 / 255.0f, 1.0); //sand  
 }
 else {
-    diffuseColor = vec4(0.0, 1.0, 0.0, 1.0);
+    diffuseColor = vec4(0.0, 0.0, 1.0, 1.0); //water/
 }
+
+//(fs_Pos.y < .04  && fs_Pos.y > -.04) {
+  //  diffuseColor = vec4(0.0, 0.0, 1.0, 1.0); //water
+//} 
+
 
     // Material base color (before shading)
         //vec4 diffuseColor = u_Color;
@@ -121,6 +136,8 @@ else {
                                                             //lit by our point light are not completely black.
 
         // Compute final shaded color
-        out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
-        //out_Col = diffuseColor;
+        //out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
+        //diffuseColor.rgb / 255.0f;
+        out_Col = diffuseColor;
+
 }
