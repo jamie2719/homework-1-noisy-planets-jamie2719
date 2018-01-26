@@ -1,5 +1,27 @@
 # CIS 566 Project 1: Noisy Planets
 
+Jamie Schwartz (jamiesch)
+
+Resources:
+https://en.wikipedia.org/wiki/Trilinear_interpolation
+
+
+A link to your live github.io demo (we'll talk about how to get this set up in class some time before the assignment is due)
+
+Screenshots of the planets are below in the repository.
+
+
+First I generated basic 3D Perlin noise in the vertex shader of the planet to determine the terrain on the planet. I ended up using summed Perlin noise for the height of the terrain; once I got the final Perlin noise value for a particular position using trilinear interpolation, I multiplied that value by the position vector to get a new position for the terrain that grew radially outward from the center of the sphere. I also calculated 3D Perlin noise to create a moving pattern for the ocean; before passing the initial position into the Perlin noise function, I multiplied it by a scaled version of the sine of the current time so that the Perlin noise values for the ocean would oscillate back and forth to mimic waves.
+
+Once I had the basic shape of the terrain, I determined the colors of the different parts of the terrain based on the Perlin noise height value at that point on the terrain. The ocean had the smallest height offset, then sand, then grass, then mountains, and then snow at the very tops of the mountains. I colored the terrain differently above and below certain y positions to create snowy icecaps at the two poles of the planet. I used Lambert shading on all of the terrain except for the water, for which I used Blinn-Phong shading in order to get a specular highlight. I also gave the water and ice a lower transparency value than the rest of the terrain.
+
+The 3 modifiable attributes are mountain height, ocean material, and amount of global warming. The mountain height changes the initial amplitude of the Perlin noise used in calculating the summed noise value for the height of the terrain. For the ocean material, I just changed the color of the ocean from blue (water) to red (lava). The amount of global warming is on a scale from -2 to 2, where -2 is total ice age, -1 is partial ice age, 0 is neutral, 1 is partial global warming, and 2 is total global warming. In total ice age, all of the land turns to ice and snow and all of the ocean turns icy. In partial ice age, this same effect occurs but only on around half of the planet, radiating from the poles. In partial global warming, the ice caps at the poles begin to shrink (the ice becomes regular terrain) and the water level of the ocean rises). In total global warming, the ice caps completely disappear and the water level of the whole ocean rises even more.
+
+
+
+
+
+
 ## Objective
 - Continue practicing WebGL and Typescript
 - Experiment with noise functions to procedurally generate the surface of a planet
