@@ -53,12 +53,15 @@ vec2 random2( vec2 p ) {
     return normalize(2.0f * fract(sin(vec2(dot(p,vec2(127.1,311.7)),dot(p,vec2(269.5,183.3))))*43758.5453) - 1.0f);
 }
 
+// calculates the Perlin noise value for a point p given a nearby gridpoint
 float perlin(vec3 p, vec3 gridPoint) {
     vec3 gradient = random3(gridPoint);
     vec3 toP = p - gridPoint;
     return dot(toP, gradient);
 }
 
+// takes in a position p, calculates the 8 grid points surrounding that position, calculates the 3D Perlin noise
+// value at each of the 8 grid points, and uses trilinear interpolation to find the final Perlin noise value for p
 float trilinearInterpolation(vec3 pos) {
     float tx = smoothstep(0.0, 1.0, fract(pos.x));
     float ty = smoothstep(0.0, 1.0, fract(pos.y));
@@ -101,7 +104,6 @@ void main()
 {
     // terrain noise calculation
     float summedNoise = 0.0;
-    float water = 0.0;
     float amplitude = u_mountainHeight;
     float val;
     for(int i = 2; i <= 64; i *= 2) {
