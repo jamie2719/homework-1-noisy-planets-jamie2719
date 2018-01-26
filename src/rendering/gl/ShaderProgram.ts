@@ -119,6 +119,19 @@ class ShaderProgram {
     }
   }
 
+  setGlobalWarming(i: number) {
+    this.use();
+    if(this.globalWarming != -1) {
+        gl.uniform1i(this.globalWarming, i);
+    }
+  }
+
+  setMountainHeight(f: number) {
+    this.use();
+    if(this.mountainHeight != -1) {
+        gl.uniform1f(this.mountainHeight, f);
+    }
+  }
 
   draw(d: Drawable) {
     this.use();

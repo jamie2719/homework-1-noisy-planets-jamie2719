@@ -18,11 +18,10 @@ uniform mat4 u_ModelInvTr;  // The inverse transpose of the model matrix.
 uniform mat4 u_ViewProj;    // The matrix that defines the camera's transformation.
                             // We've written a static matrix for you to use for HW2,
                             // but in HW3 you'll have to generate one yourself
-out float offset;
-out float waterNoise;
 
 uniform float u_Time;
 uniform vec4 u_Eye;
+uniform float u_mountainHeight;     // float representing GUI control of mountain height
 
 in vec4 vs_Pos;             // The array of vertex positions passed to the shader
 
@@ -30,16 +29,13 @@ in vec4 vs_Nor;             // The array of vertex normals passed to the shader
 
 in vec4 vs_Col;             // The array of vertex colors passed to the shader.
 
-//uniform float u_rotSpeed;         // float representing GUI control of planet rotation speed
-//uniform float u_mountainHeight;     // float representing GUI control of mountain height
-//uniform int u_globalWarming;     // float representing whether planet is in ice age (-1), neutral (0), or complete global warming (1)
-
-
 out vec4 fs_Nor;            // The array of normals that has been transformed by u_ModelInvTr. This is implicitly passed to the fragment shader.
 out vec4 fs_LightVec;       // The direction in which our virtual light lies, relative to each vertex. This is implicitly passed to the fragment shader.
 out vec4 fs_Col;            // The color of each vertex. This is implicitly passed to the fragment shader.
 out vec4 fs_Pos;
 out vec4 fs_CamPos;         // position of the camera
+out float offset;
+out float waterNoise;
 
 const vec4 lightPos = vec4(5, 5, 3, 1); //The position of our virtual light, which is used to compute the shading of
                                         //the geometry in the fragment shader.
@@ -101,39 +97,33 @@ float trilinearInterpolation(vec3 pos) {
 
 
 
-
 void main()
 {
-
+    // terrain noise calculation
     float summedNoise = 0.0;
     float water = 0.0;
-    float amplitude = 0.5;
+    float amplitude = u_mountainHeight;
     float val;
-    for(int i = 2; i <= 8; i *= 2) {
-        vec3 pos = vec3(vs_Pos) *2.0f * float(i);
+    for(int i = 2; i <= 64; i *= 2) {
+        vec3 pos = vec3(vs_Pos) * 1.5f * float(i);
         val = trilinearInterpolation(pos);
         summedNoise += val * amplitude;
         amplitude *= 0.5;
     }
 
-    val =  summedNoise;
+    val =  summedNoise * .6f;
+    vec4 offsetPos = vec4(val * vs_Pos.rgb, 0.0);
+    offset = val;
 
-
-    //water noise calculation
-    vec3 waterPos = vec3(vs_Pos) * 16.0f;
+    // water noise calculation
+    vec3 waterPos = vec3(vs_Pos) * 16.f * ((sin(u_Time * .002) + 2.f)/4.0);
     waterNoise = trilinearInterpolation(waterPos) *1.5f;
     
 
 
-    val *= .6f;
-    vec4 offsetPos = vec4(0.0, val, 0.0, 0.0);
-    offset = offsetPos.y;
 
     fs_Col = vs_Col;                         // Pass the vertex colors to the fragment shader for interpolation
     
-
-    
-
     mat3 invTranspose = mat3(u_ModelInvTr);
     fs_Nor = vec4(invTranspose * vec3(vs_Nor), 0);          // Pass the vertex normals to the fragment shader for interpolation.
                                                             // Transform the geometry's normals by the inverse transpose of the
@@ -142,13 +132,13 @@ void main()
                                                             // the model matrix.
 
     vec4 modelposition;
-    if(vs_Pos.y < 0.0f) {
-       modelposition = u_Model * (vs_Pos - offsetPos); 
+    if(val < 0.0f) {
+       modelposition = u_Model * (vs_Pos + .2 * offsetPos); // decrease valleys
     }
     else {
        modelposition = u_Model * (vs_Pos + offsetPos); 
     }
-       // Temporarily store the transformed vertex positions for use below
+
 
     fs_LightVec = lightPos - modelposition;  // Compute the direction in which the light source lies
     fs_CamPos = u_Eye;
